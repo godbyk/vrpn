@@ -37,9 +37,9 @@ static void normalize_axes(const unsigned int x, const unsigned int y, const sho
 }
 
 vrpn_Griffin::vrpn_Griffin(vrpn_HidAcceptor *filter, const char *name, vrpn_Connection *c)
-  : vrpn_HidInterface(filter)
-  , vrpn_BaseClass(name, c)
-  , _filter(filter)
+	: vrpn_HidInterface(filter)
+	, vrpn_BaseClass(name, c)
+	, _filter(filter)
 {
 	init_hid();
 }
@@ -57,7 +57,7 @@ void vrpn_Griffin::init_hid(void) {
 
 void vrpn_Griffin::on_data_received(size_t bytes, vrpn_uint8 *buffer)
 {
-  decodePacket(bytes, buffer);
+	decodePacket(bytes, buffer);
 }
 
 int vrpn_Griffin::on_last_disconnect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
@@ -73,21 +73,22 @@ int vrpn_Griffin::on_connect(void *thisPtr, vrpn_HANDLERPARAM /*p*/)
 }
 
 vrpn_Griffin_PowerMate::vrpn_Griffin_PowerMate(const char *name, vrpn_Connection *c)
-  : vrpn_Griffin(_filter = new vrpn_HidProductAcceptor(GRIFFIN_VENDOR, GRIFFIN_POWERMATE), name, c)
-  , vrpn_Button_Filter(name, c)
-  , vrpn_Analog(name, c)
-  , vrpn_Dial(name, c)
+	: vrpn_Griffin(_filter = new vrpn_HidProductAcceptor(GRIFFIN_VENDOR, GRIFFIN_POWERMATE), name, c)
+	, vrpn_Button_Filter(name, c)
+	, vrpn_Analog(name, c)
+	, vrpn_Dial(name, c)
 {
-  vrpn_Analog::num_channel = 0;
-  vrpn_Dial::num_dials = 1;
-  vrpn_Button::num_buttons = 1;
+	vrpn_Analog::num_channel = 1;
+	vrpn_Dial::num_dials = 1;
+	vrpn_Button::num_buttons = 1;
 
-  // Initialize the state of all the analogs, buttons, and dials
-  _lastDial = 0;
-  memset(buttons, 0, sizeof(buttons));
-  memset(lastbuttons, 0, sizeof(lastbuttons));
-  memset(channel, 0, sizeof(channel));
-  memset(last, 0, sizeof(last));
+	// Initialize the state of all the analogs, buttons, and dials
+	_lastDial = 0;
+	memset(buttons, 0, sizeof(buttons));
+	memset(lastbuttons, 0, sizeof(lastbuttons));
+	memset(channel, 0, sizeof(channel));
+	memset(last, 0, sizeof(last));
+	memset(dials, 0, sizeof(dials));
 }
 
 void vrpn_Griffin_PowerMate::mainloop(void)
@@ -96,7 +97,7 @@ void vrpn_Griffin_PowerMate::mainloop(void)
 	server_mainloop();
 	struct timeval current_time;
 	vrpn_gettimeofday(&current_time, NULL);
-	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL ) {
+	if (vrpn_TimevalDuration(current_time, _timestamp) > POLL_INTERVAL) {
 		_timestamp = current_time;
 		report_changes();
 
@@ -132,6 +133,7 @@ void vrpn_Griffin_PowerMate::report(vrpn_uint32 class_of_service) {
 	if (vrpn_Analog::num_channel > 0)
 	{
 		vrpn_Analog::report(class_of_service);
+		channel[0] = 0.0; // reset analog channel
 	}
 	if (vrpn_Button::num_buttons > 0)
 	{
@@ -160,6 +162,7 @@ void vrpn_Griffin_PowerMate::report_changes(vrpn_uint32 class_of_service) {
 	if (vrpn_Analog::num_channel > 0)
 	{
 		vrpn_Analog::report(class_of_service);
+		channel[0] = 0.0; // reset analog channel
 	}
 	if (vrpn_Button::num_buttons > 0)
 	{
@@ -173,8 +176,8 @@ void vrpn_Griffin_PowerMate::report_changes(vrpn_uint32 class_of_service) {
 
 void vrpn_Griffin_PowerMate::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 	// Decode all full reports, each of which is 8 bytes long.
-        // Because there is only one type of report, the initial "0" report-type
-        // byte is removed by the HIDAPI driver.
+	// Because there is only one type of report, the initial "0" report-type
+	// byte is removed by the HIDAPI driver.
 	// XXX Check to see that this works with HIDAPI, there may be two smaller reports.
 	if (bytes == 6) {
 
@@ -183,6 +186,7 @@ void vrpn_Griffin_PowerMate::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 			// Do the unsigned/signed conversion at the last minute so the
 			// signed values work properly.
 			dials[0] = static_cast<vrpn_int8>(buffer[1]);
+			channel[0] = dials[0];
 		} else {
 			// dial (2nd byte)
 			normalize_axis(buffer[1], 5, 1.0f, channel[0]);
@@ -201,5 +205,5 @@ void vrpn_Griffin_PowerMate::decodePacket(size_t bytes, vrpn_uint8 *buffer) {
 	}
 }
 
-// End of VRPN_USE_HID
-#endif
+#endif // VRPN_USE_HID
+
