@@ -120,16 +120,16 @@ endif()
 
 # Test 32/64 bits
 if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+	set(_ovr_libname_bitsuffix "64")
 	set(_ovr_library_arch "x86_64")
 	if (WIN32)
 		set(_ovr_library_arch "x64")
-		set(_ovr_libname_bitsuffix "64")
 	endif(WIN32)
 else()
+	set(_ovr_libname_bitsuffix "32")
 	set(_ovr_library_arch "i386")
 	if (WIN32)
 		set(_ovr_library_arch "Win32")
-		set(_ovr_libname_bitsuffix "")
 	endif(WIN32)
 endif()
 
@@ -155,6 +155,7 @@ list(APPEND _ovr_library_debug_paths ${OVR_LIBRARY_PATH_SUFFIX}/${_ovr_operating
 list(APPEND _ovr_library_debug_paths ${OVR_LIBRARY_PATH_SUFFIX}/${_ovr_library_arch}/Debug/${_ovr_library_compiler})
 
 # Generate list of potential library names
+list(APPEND _ovr_library_names libOVRRT${_ovr_libname_bitsuffix}_0.so.5.0.1)
 list(APPEND _ovr_library_names libovr.ax${_ovr_libname_bitsuffix})
 list(APPEND _ovr_library_names ovr)
 list(APPEND _ovr_library_names OVR)
@@ -162,6 +163,7 @@ list(APPEND _ovr_library_names LibOVR)
 list(APPEND _ovr_library_names ovr${_ovr_libname_bitsuffix})
 list(APPEND _ovr_library_names OVRRT${_ovr_libname_bitsuffix})
 list(APPEND _ovr_library_names OVRRT${_ovr_libname_bitsuffix}_0)
+list(APPEND _ovr_library_debug_names libOVRRT${_ovr_libname_bitsuffix}_0.so.5.0.1)
 list(APPEND _ovr_library_debug_names ovr)
 list(APPEND _ovr_library_debug_names OVR)
 list(APPEND _ovr_library_debug_names LibOVR)
@@ -179,6 +181,8 @@ find_library(OVR_LIBRARY_RELEASE
 	c:/tools/oculus-sdk.install/OculusSDK/LibOVR
 	PATH_SUFFIXES
 	${_ovr_library_paths}
+	lib
+	lib64
 )
 
 find_library(OVR_LIBRARY_DEBUG
@@ -190,6 +194,8 @@ find_library(OVR_LIBRARY_DEBUG
 	c:/tools/oculus-sdk.install/OculusSDK/LibOVR
 	PATH_SUFFIXES
 	${_ovr_library_debug_paths}
+	lib
+	lib64
 )
 
 include(SelectLibraryConfigurations)
@@ -230,6 +236,7 @@ find_path(OVR_SOURCE_DIR
 	PATH_SUFFIXES
 	Src
 	Include
+	include
 )
 
 # Dependencies
